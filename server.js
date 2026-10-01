@@ -21,7 +21,7 @@ const CONFIG = {
 };
 
 // ===== SỐ LƯỢNG KEY — SỬA Ở ĐÂY =====
-let availableKeys = 000; // Muốn bao nhiêu thì đổi số này
+let availableKeys = 1000; // Muốn bao nhiêu thì đổi số này
 
 // ===== DỮ LIỆU =====
 const users = new Map();
