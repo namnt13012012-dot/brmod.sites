@@ -70,18 +70,18 @@
       cursor: pointer;
       font-weight: bold;
       transition: 0.2s;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
-    .btn-primary { background: #22c55e; color: #000; }
-    .btn-primary:hover { background: #16a34a; }
-    .btn-primary:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
-
-    .btn-download { background: #3b82f6; color: #fff; display: none; }
-    .btn-download:hover { background: #2563eb; }
+    .btn-key { background: #22c55e; color: #000; }
+    .btn-key:hover { background: #16a34a; }
+    .btn-key:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
 
     .btn-link4m { background: #f59e0b; color: #000; display: none; }
     .btn-link4m:hover { background: #d97706; }
+
+    .btn-mediafire { background: #0090d4; color: #fff; display: none; }
+    .btn-mediafire:hover { background: #0077b3; }
 
     .result {
       margin-top: 20px;
@@ -142,13 +142,13 @@
     }
 
     .yt-link a { color: #3b82f6; text-decoration: none; }
-    .note { margin-top: 15px; font-size: 13px; color: #94a3b8; text-align: center; }
+    .note { margin-top: 15px; font-size: 13px; color: #94a3b8; text-align: center; line-height: 1.6; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>🔑 BRMOD — Lấy Khóa & Tải Công Cụ</h1>
-    <p class="subtitle">Bước 1: Nhận khóa → Bước 2: Mở Link4m → Bước 3: Tải công cụ</p>
+    <p class="subtitle">Bước 1 → Nhận khóa → Bước 2 → Link4m → Bước 3 → Tải Mediafire</p>
 
     <div class="card">
       <div class="stat-row">
@@ -166,8 +166,9 @@
     </div>
 
     <div class="card">
-      <button id="claim-btn" class="btn-primary" onclick="claimKey()">
-        BƯỚC 1: NHẬN KHÓA
+      <!-- BƯỚC 1: NHẬN KHÓA -->
+      <button id="claim-btn" class="btn-key" onclick="claimKey()">
+        BƯỚC 1: NHẬN KHÓA KÍCH HOẠT
       </button>
       
       <div class="loading" id="loading">
@@ -180,18 +181,22 @@
         <p id="expire-info" style="text-align:center; color:#94a3b8; font-size:14px;"></p>
       </div>
 
-      <!-- Bước 2: Link4m — HIỆN SAU KHI CÓ KEY -->
+      <!-- BƯỚC 2: LINK4M → DÒNG RIÊNG -->
       <button id="link4m-btn" class="btn-link4m" onclick="openLink4m()">
-        BƯỚC 2: MỞ LINK4M → NHẬN LINK TẢI
+        BƯỚC 2: MỞ LINK4M — LẤY LINK TẢI
       </button>
 
-      <!-- Bước 3: Tải xuống — HIỆN SAU KHI BƯỚC 2 -->
-      <button id="download-btn" class="btn-download" onclick="openDownload()">
-        BƯỚC 3: TẢI CÔNG CỤ VỀ MÁY
+      <!-- BƯỚC 3: MEDIAFIRE → DÒNG RIÊNG -->
+      <button id="mediafire-btn" class="btn-mediafire" onclick="openMediafire()">
+        BƯỚC 3: TẢI TỪ MEDIAFIRE
       </button>
     </div>
 
-    <p class="note">💡 Sau khi có khóa, bạn phải qua Link4m rồi mới thấy link tải chính thức</p>
+    <p class="note">
+      💡 Lưu ý:<br>
+      → Phải qua Link4m trước mới thấy link Mediafire<br>
+      → Nhấn Mediafire sẽ mở trang tải trực tiếp
+    </p>
 
     <div class="yt-link">
       <p>Kênh hỗ trợ: <a id="yt-channel" href="#" target="_blank">@quocthaipc</a></p>
@@ -199,9 +204,12 @@
   </div>
 
   <script>
-    // ===== CẤU HÌNH LINK CỦA BẠN =====
-    const LINK4M_URL = 'https://link4m.com/your-link-day-ngay'; // 🔄 SỬA LINK CỦA BẠN
-    const DOWNLOAD_URL = 'https://link-tai-cong-cu-cua-ban.com'; // 🔄 SỬA LINK TẢI CỦA BẠN
+    // ==================================================
+    // 🔄 ĐIỀN LINK CỦA BẠN VÀO 2 DÒNG DƯỚI NÀY
+    // ==================================================
+    const LINK4M_URL = 'ĐIỀN_LINK_LINK4M_CỦA_BẠN_VÀI_DÂY';
+    const MEDIAFIRE_URL = 'ĐIỀN_LINK_MEDIAFIRE_CỦA_BẠN_VÀI_DÂY';
+    // ==================================================
 
     const API = window.location.origin;
     let waitTime = 0;
@@ -240,21 +248,29 @@
         if (waitTime <= 0) {
           clearInterval(timer);
           btn.disabled = false;
-          btn.textContent = 'BƯỚC 1: NHẬN KHÓA';
+          btn.textContent = 'BƯỚC 1: NHẬN KHÓA KÍCH HOẠT';
         }
       }, 1000);
     }
 
-    // Mở Link4m
+    // Bước 2: Mở Link4m
     function openLink4m() {
+      if (LINK4M_URL.includes('ĐIỀN')) {
+        alert('Vui lòng điền link Link4m vào code trước!');
+        return;
+      }
       window.open(LINK4M_URL, '_blank');
-      // Hiện nút Tải sau khi mở Link4m
-      document.getElementById('download-btn').style.display = 'block';
+      // Hiện nút Mediafire sau khi mở Link4m
+      document.getElementById('mediafire-btn').style.display = 'block';
     }
 
-    // Mở link Tải
-    function openDownload() {
-      window.open(DOWNLOAD_URL, '_blank');
+    // Bước 3: Mở Mediafire
+    function openMediafire() {
+      if (MEDIAFIRE_URL.includes('ĐIỀN')) {
+        alert('Vui lòng điền link Mediafire vào code trước!');
+        return;
+      }
+      window.open(MEDIAFIRE_URL, '_blank');
     }
 
     // Nhận khóa
@@ -265,13 +281,14 @@
       const loading = document.getElementById('loading');
       const resultBox = document.getElementById('result-box');
       const link4mBtn = document.getElementById('link4m-btn');
+      const mediafireBtn = document.getElementById('mediafire-btn');
       
       btn.disabled = true;
       btn.style.display = 'none';
       loading.style.display = 'block';
       resultBox.style.display = 'none';
       link4mBtn.style.display = 'none';
-      document.getElementById('download-btn').style.display = 'none';
+      mediafireBtn.style.display = 'none';
 
       try {
         // Lấy token bảo mật
@@ -304,7 +321,7 @@
           document.getElementById('expire-info').textContent = 
             `Hạn sử dụng: ${exp.toLocaleString('vi-VN')}`;
 
-          // ✅ HIỆN NÚT BƯỚC 2 — Link4m
+          // Hiện Bước 2: Link4m
           link4mBtn.style.display = 'block';
           
           startCountdown(10);
