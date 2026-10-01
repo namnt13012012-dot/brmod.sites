@@ -72,7 +72,7 @@
     .card-desc { color: var(--text-dim); font-size: 15px; margin: 16px 0 24px; line-height: 1.5; }
     .card-buttons { display: flex; gap: 12px; }
     
-    /* ========== NÚT TẢI TRỰC TIẾP — ĐẸP HƠN ========== */
+    /* Nút Tải Trực Tiếp */
     .btn { 
       width: 100%; padding: 16px 20px; border-radius: 12px; 
       border: none; font-weight: 700; cursor: pointer; text-decoration: none; 
@@ -111,7 +111,7 @@
     .btn-orange:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(249, 115, 22, 0.35); }
     .notice { margin-top: 16px; font-size: 12px; color: var(--text-dim); }
     
-    /* Result Key */
+    /* Result Key — MẶC ĐỊNH ẨN HOÀN TOÀN */
     .key-result { margin-top: 24px; padding: 24px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); border-radius: 12px; display: none; }
     .key-result.show { display: block; animation: fadeIn 0.4s; }
     .key-result.admin-mode { background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.25); }
@@ -172,7 +172,7 @@
       </nav>
     </header>
 
-    <!-- TAB 1: DANH SÁCH FILE — ĐÃ BỎ NÚT LẤY KHÓA -->
+    <!-- TAB 1: DANH SÁCH FILE -->
     <section class="tab-content active" id="tab-files">
       <div class="hero">
         <div class="hero-badge" id="hero-status">
@@ -256,12 +256,13 @@
         <a id="main-getkey-link" href="https://link4m.org/e55Eo" target="_blank" rel="noopener" class="btn btn-orange btn-main" onclick="if(isAdmin){event.preventDefault();adminGetKey();return false;}startKeyProcess();">
           <i class="fa-solid fa-unlock"></i> <span id="main-btn-text">BẮT ĐẦU LẤY KHÓA</span>
         </a>
-        <p class="notice" id="after-link-notice" style="margin-top: 14px;">
+        <p class="notice" id="after-link-notice" style="margin-top: 14px; display: none;">
           💡 Sau vượt link xong → quay lại bấm nút bên dưới:
         </p>
         <button id="receive-key-btn" class="btn btn-green btn-main" style="margin-top: 10px; display: none;" onclick="assignKey()">
           <i class="fa-solid fa-gift"></i> NHẬN KEY NGAY
         </button>
+        <!-- Ô KEY — MẶC ĐỊNH ẨN HOÀN TOÀN, CHỈ HIỆN SAU KHI BẤM NHẬN KEY -->
         <div class="key-result" id="key-result-box">
           <p class="key-label">✅ Khóa kích hoạt của bạn:</p>
           <div class="key-code" id="display-key">---</div>
@@ -362,7 +363,7 @@
 
     <!-- Footer -->
     <footer>
-      <p>© 2025 KEY HUB — Hệ thống chia sẻ & cấp key. Admin bỏ qua Link4M khi đã đăng nhập.</p>
+      <p>© 2026 KEY HUB — Hệ thống chia sẻ & cấp key. Admin bỏ qua Link4M khi đã đăng nhập.</p>
     </footer>
   </div>
 
@@ -428,7 +429,8 @@ function applyAdminMode() {
     document.getElementById('stock-badge-box').classList.remove('admin');
     document.getElementById('steps-box').classList.remove('admin');
     document.getElementById('getkey-main-desc').textContent = 'Vượt Link4M → quay lại → nhận key tự động!';
-    document.getElementById('after-link-notice').style.display = 'block';
+    // Reset trạng thái người dùng bình thường
+    document.getElementById('after-link-notice').style.display = localStorage.getItem('keyProcessStarted') === 'true' ? 'block' : 'none';
   }
 }
 applyAdminMode();
@@ -462,6 +464,9 @@ function adminLogout() {
   document.getElementById('admin-pass').value = '';
   document.getElementById('admin-login-error').style.display = 'none';
   applyAdminMode();
+  // Reset hiển thị khi đăng xuất
+  document.getElementById('receive-key-btn').style.display = 'none';
+  document.getElementById('key-result-box').classList.remove('show', 'admin-mode');
 }
 
 // Admin tạo key trực tiếp
@@ -488,7 +493,11 @@ function adminGetKey() {
 // Người dùng — Bắt đầu quy trình lấy key
 function startKeyProcess() {
   localStorage.setItem('keyProcessStarted', 'true');
+  // Hiện hướng dẫn + nút nhận key sau khi quay lại
+  document.getElementById('after-link-notice').style.display = 'block';
   alert('✅ Đang mở Link4M...\n\nHoàn thành vượt link xong → QUAY LẠI trang này → bấm "NHẬN KEY NGAY"');
+  // Hiện nút nhận key ngay sau khi bấm bắt đầu
+  document.getElementById('receive-key-btn').style.display = 'inline-flex';
 }
 
 // Nhận key sau khi quay lại
@@ -506,12 +515,14 @@ function assignKey() {
   usedKeys.push(availableKey);
   localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
   
+  // CHỈ HIỆN Ô KEY SAU KHI BẤM NHẬN KEY
   document.getElementById('display-key').textContent = availableKey;
   document.getElementById('key-result-box').classList.add('show');
   
   // Xóa đánh dấu
   localStorage.removeItem('keyProcessStarted');
   document.getElementById('receive-key-btn').style.display = 'none';
+  document.getElementById('after-link-notice').style.display = 'none';
   
   updateStockDisplay();
 }
@@ -530,6 +541,7 @@ function resetKeyProcess() {
   document.getElementById('admin-gen-result').style.display = 'none';
   localStorage.removeItem('keyProcessStarted');
   document.getElementById('receive-key-btn').style.display = 'none';
+  document.getElementById('after-link-notice').style.display = 'none';
 }
 
 // Kiểm tra key
@@ -550,7 +562,7 @@ function checkKeyStatus(e) {
   }
 }
 
-// Khi trang tải xong
+// Khi trang tải xong — Ẩn hết nếu chưa bấm bắt đầu
 window.addEventListener('load', () => {
   if (isAdmin) {
     document.getElementById('admin-login-view').style.display = 'none';
@@ -559,6 +571,12 @@ window.addEventListener('load', () => {
     const started = localStorage.getItem('keyProcessStarted');
     if (started === 'true') {
       document.getElementById('receive-key-btn').style.display = 'inline-flex';
+      document.getElementById('after-link-notice').style.display = 'block';
+    } else {
+      // Ẩn hoàn toàn nếu chưa bắt đầu
+      document.getElementById('receive-key-btn').style.display = 'none';
+      document.getElementById('after-link-notice').style.display = 'none';
+      document.getElementById('key-result-box').classList.remove('show');
     }
   }
 });
