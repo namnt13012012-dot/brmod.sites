@@ -9,7 +9,7 @@ app.use(express.json());
 // ===== CẤU HÌNH =====
 const SECRET_KEY = 'nguyenthanhnam@1301';
 const CONFIG = {
-  siteUrl: 'https://brmod-sites.onrender.com',
+siteUrl: 'https://brmod-sites.onrender.com',
   minWaitSeconds: 10,
   maxKeysPerIp: 2,
   hasLink4mKey: true,
