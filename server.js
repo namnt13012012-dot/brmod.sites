@@ -1,15 +1,20 @@
 const express = require('express');
 const crypto = require('crypto');
 const cors = require('cors');
+const path = require('path'); // ✅ Thêm thư mục file
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// ✅ PHỤC VỤ FILE GIAO DIỆN — ĐỂ Ở ĐÂY
+app.use(express.static(path.join(__dirname, '.')));
+
 // ===== CẤU HÌNH =====
-const SECRET_KEY = 'nguyenthanhnam@1301';
+const SECRET_KEY = 'BrModSites_2026_KhoaBiMat_ABC123xyz';
 const CONFIG = {
-siteUrl: 'https://brmod-sites.onrender.com',
+  siteUrl: 'https://brmod-sites.onrender.com',
   minWaitSeconds: 10,
   maxKeysPerIp: 2,
   hasLink4mKey: true,
@@ -27,7 +32,7 @@ let availableKeys = 1000;
 const users = new Map();
 const ipClaims = new Map();
 
-// ===== TẠO HMAC =====
+// ===== HMAC =====
 function generateHMAC(data, timestamp) {
   const str = JSON.stringify(data) + timestamp;
   return crypto
@@ -59,32 +64,7 @@ function createKey(durationHours = 5) {
 
 // ===== TRANG CHỦ =====
 app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="vi">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>BRMOD — KEY HUB</title>
-      <style>
-        body { font-family: Arial; background: #050816; color: #fff; text-align: center; padding: 50px; }
-        h1 { color: #22c55e; }
-        .ok { color: #22c55e; font-size: 20px; }
-        .api { background: #111a2f; padding: 15px; border-radius: 10px; margin: 10px auto; max-width: 500px; }
-        a { color: #3b82f6; text-decoration: none; }
-      </style>
-    </head>
-    <body>
-      <h1>✅ BRMOD Server Đang Hoạt Động</h1>
-      <p class="ok">Tất cả API đã sẵn sàng!</p>
-      <div class="api">
-        <p><strong>/info</strong> — Thông tin hệ thống & số key</p>
-        <p><strong>/claim-key</strong> — Nhận key mới</p>
-        <p><strong>/sync-keys</strong> — Kiểm tra key đã nhận</p>
-      </div>
-    </body>
-    </html>
-  `);
+  res.sendFile(path.join(__dirname, 'index.html')); // ✅ Mở index.html tự động
 });
 
 // ===== API /info =====
@@ -106,7 +86,6 @@ app.get('/info', (req, res) => {
   });
 });
 
-// ===== API /me =====
 app.get('/me', (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress;
   const userId = `usr_${crypto.createHash('md5').update(clientIp + Date.now()).digest('hex').slice(0, 10)}`;
@@ -120,31 +99,27 @@ app.get('/me', (req, res) => {
   res.json({ success: true, user: users.get(userId), claimedKeys: users.get(userId).claimedKeys });
 });
 
-// ===== API /sync-keys =====
 app.get('/sync-keys', (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress;
-  const userId = Array.from(users.entries()).find(([_, u]) => u.claimedKeys.length > 0)?.[0] 
+  const userId = Array.from(users.entries()).find(([_, u]) => u.claimedKeys.length > 0)?.[0]
     || `usr_${crypto.createHash('md5').update(clientIp).digest('hex').slice(0, 10)}`;
   const user = users.get(userId) || { claimedKeys: [] };
   const now = new Date();
   const activeKey = user.claimedKeys.find(k => new Date(k.expiresAt) > now);
-  const remaining = activeKey ? Math.floor((new Date(activeKey.expiresAt) - now) / 60000) : 0;
   res.json({
     success: true, mergedKeys: user.claimedKeys, hasActiveKey: !!activeKey,
-    activeKey: activeKey || null, activeRemainingMinutes: remaining,
+    activeKey: activeKey || null,
+    activeRemainingMinutes: activeKey ? Math.floor((new Date(activeKey.expiresAt) - now) / 60000) : 0,
     message: activeKey ? 'Đã đăng bộ 1 khóa vào tài khoản thành công!' : 'Chưa có khóa hoạt động'
   });
 });
 
-// ===== API /GenerateT =====
 app.post('/GenerateT', (req, res) => {
   const timestamp = Math.floor(Date.now() / 1000);
-  const data = req.body || [];
-  const token = generateHMAC(data, timestamp);
+  const token = generateHMAC(req.body || [], timestamp);
   res.json([token, timestamp, 100]);
 });
 
-// ===== API Nhận khóa =====
 app.post('/claim-key', (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress;
   const ipData = ipClaims.get(clientIp) || { count: 0 };
@@ -169,8 +144,5 @@ app.post('/claim-key', (req, res) => {
   res.json({ success: true, key: newKey, message: 'Nhận khóa thành công!' });
 });
 
-// ===== KHỞI ĐỘNG =====
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server chạy cổng ${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Server chạy cổng ${PORT}`));
