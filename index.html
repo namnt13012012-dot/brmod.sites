@@ -392,224 +392,249 @@
   </div>
 
   <script>
-    // ========== TÀI KHOẢN ADMIN — THAY ĐỔI Ở ĐÂY ==========
-    const ADMIN_USER = 'admin';      // Tên tài khoản admin
-    const ADMIN_PASS = 'nguyenthanhnam@1301';   // Mật khẩu admin — đổi thành mật khẩu của bạn!
+// ========== TÀI KHOẢN ADMIN ==========
+const ADMIN_USER = 'admin';      // Đổi tên tài khoản
+const ADMIN_PASS = 'admin123';   // Đổi mật khẩu
 
-    // ========== DANH SÁCH 1000 KEY TỰ ĐỘNG TẠO ==========
-    const keyList = [];
-    for (let i = 1; i <= 1000; i++) {
-      const num = String(i).padStart(4, '0');
-      const r1 = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const r2 = Math.random().toString(36).substring(2, 6).toUpperCase();
-      keyList.push(`KEY-${num}-${r1}-${r2}`);
-    }
+// Tạo danh sách key
+const keyList = [];
+for (let i = 1; i <= 1000; i++) {
+  const num = String(i).padStart(4, '0');
+  const r1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const r2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  keyList.push(`KEY-${num}-${r1}-${r2}`);
+}
 
-    // ========== TRẠNG THÁI HỆ THỐNG ==========
-    let usedKeys = JSON.parse(localStorage.getItem('usedKeys') || '[]');
-    let isAdmin = localStorage.getItem('isAdminLoggedIn') === 'true';
-    let lastAdminKey = '';
+// Trạng thái hệ thống
+let usedKeys = JSON.parse(localStorage.getItem('usedKeys') || '[]');
+let isAdmin = localStorage.getItem('isAdminLoggedIn') === 'true';
+let lastAdminKey = '';
 
-    // Cập nhật số lượng hiển thị
-    function updateStockDisplay() {
-      const remain = keyList.length - usedKeys.length;
-      document.getElementById('stock-count').textContent = remain;
-      if (document.getElementById('stat-total')) document.getElementById('stat-total').textContent = keyList.length;
-      if (document.getElementById('stat-used')) document.getElementById('stat-used').textContent = usedKeys.length;
-      if (document.getElementById('stat-remain')) document.getElementById('stat-remain').textContent = remain;
-    }
-    updateStockDisplay();
+// Cập nhật số lượng key hiển thị
+function updateStockDisplay() {
+  const remain = keyList.length - usedKeys.length;
+  const stockEl = document.getElementById('stock-count');
+  if (stockEl) stockEl.textContent = remain;
+  if (document.getElementById('stat-total')) document.getElementById('stat-total').textContent = keyList.length;
+  if (document.getElementById('stat-used')) document.getElementById('stat-used').textContent = usedKeys.length;
+  if (document.getElementById('stat-remain')) document.getElementById('stat-remain').textContent = remain;
+}
+updateStockDisplay();
 
-    // ========== CHUYỂN TAB ==========
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      });
-    });
-
-    // ========== KIỂM TRA CHẾ ĐỘ ADMIN ==========
-    function applyAdminMode() {
-      if (isAdmin) {
-        // Cập nhật giao diện chế độ Admin
-        document.getElementById('mode-label').innerHTML = 'Quản Trị Viên <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Bỏ Qua Link4M</span>';
-        document.getElementById('hero-status').classList.add('admin-mode');
-        document.getElementById('hero-status').innerHTML = '<span></span> 🔐 CHẾ ĐỘ ADMIN — Nhận Key Trực Tiếp Không Cần Vượt Link';
-        document.getElementById('hero-desc').textContent = 'Bạn đang đăng nhập quản trị viên. Bỏ qua toàn bộ bước xác minh Link4M.';
-        document.getElementById('main-btn-text').textContent = '⚡ TẠO KEY NGAY (Bỏ Qua Link)';
-        
-        // Sửa giao diện tab Lấy Khóa
-        document.getElementById('key-icon-box').classList.add('admin');
-        document.getElementById('stock-badge-box').classList.add('admin');
-        document.getElementById('steps-box').classList.add('admin');
-        document.getElementById('getkey-main-desc').textContent = 'Chế độ Admin: bấm nút → nhận key ngay không cần vượt Link4M!';
-        document.getElementById('after-link-notice').style.display = 'none';
-        document.getElementById('receive-key-btn').style.display = 'none';
-      } else {
-        // Khôi phục giao diện người dùng bình thường
-        document.getElementById('mode-label').textContent = 'Tải File & Lấy Khóa';
-        document.getElementById('hero-status').classList.remove('admin-mode');
-        document.getElementById('hero-status').innerHTML = '<span></span> Tải Trực Tiếp • Không Chờ Đợi';
-        document.getElementById('hero-desc').textContent = 'Tải file trực tiếp. Nhận key sau khi vượt Link4M.';
-        document.getElementById('main-btn-text').textContent = 'BẮT ĐẦU LẤY KHÓA';
-        
-        document.getElementById('key-icon-box').classList.remove('admin');
-        document.getElementById('stock-badge-box').classList.remove('admin');
-        document.getElementById('steps-box').classList.remove('admin');
-        document.getElementById('getkey-main-desc').textContent = 'Vượt Link4M → quay lại → nhận key tự động!';
-        document.getElementById('after-link-notice').style.display = 'block';
-      }
-    }
-    applyAdminMode();
-
-    // ========== ĐĂNG NHẬP ADMIN ==========
-    function adminLogin(e) {
-      e.preventDefault();
-      const u = document.getElementById('admin-user').value.trim();
-      const p = document.getElementById('admin-pass').value.trim();
-      
-      if (u === ADMIN_USER && p === ADMIN_PASS) {
-        isAdmin = true;
-        localStorage.setItem('isAdminLoggedIn', 'true');
-        document.getElementById('admin-login-view').style.display = 'none';
-        document.getElementById('admin-dashboard-view').style.display = 'block';
-        applyAdminMode();
-        updateStockDisplay();
-      } else {
-        document.getElementById('admin-login-error').style.display = 'block';
-      }
-    }
-
-    // ========== ĐĂNG XUẤT ADMIN ==========
-    function adminLogout() {
-      isAdmin = false;
-      localStorage.removeItem('isAdminLoggedIn');
-      document.getElementById('admin-login-view').style.display = 'block';
-      document.getElementById('admin-dashboard-view').style.display = 'none';
-      document.getElementById('admin-user').value = '';
-      document.getElementById('admin-pass').value = '';
-      document.getElementById('admin-login-error').style.display = 'none';
-      applyAdminMode();
-    }
-
-    // ========== ADMIN TẠO KEY TRỰC TIẾP ==========
-    function adminGetKey() {
-      const availableKey = keyList.find(k => !usedKeys.includes(k));
-      if (!availableKey) {
-        alert('❌ Hết key trong kho!');
-        return;
-      }
-      
-      usedKeys.push(availableKey);
-      localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
-      lastAdminKey = availableKey;
-      
-      // Hiển thị ở tab Lấy Khóa
-      document.getElementById('display-key').textContent = availableKey;
-      document.getElementById('key-result-box').classList.add('show', 'admin-mode');
-      document.getElementById('copy-key-btn').classList.add('admin');
-      
-      // Hiển thị ở tab Quản Trị
-      document.getElementById('admin-new-key').textContent = availableKey;
-      document.getElementById('admin-gen-result').style.display = 'block';
-      
-      updateStockDisplay();
-      
-      // Tự động chuyển tab đến kết quả
-      switchTab('getkey');
-    }
-
-    // ========== NGƯỜI DÙNG BÌNH THƯỜNG LẤY KEY ==========
-    function startKeyProcess() {
-      localStorage.setItem('keyProcessStarted', 'true');
-      alert('✅ Đang chuyển đến Link4M...\n\nHoàn thành → quay lại bấm "NHẬN KEY NGAY"');
-      setTimeout(() => {
-        document.getElementById('receive-key-btn').style.display = 'inline-flex';
-      }, 1500);
-    }
-
-    // Phân phối key cho người dùng thường
-    function assignKey() {
-      const availableKey = keyList.find(k => !usedKeys.includes(k));
-      if (!availableKey) {
-        alert('❌ Hết key trong kho!');
-        return;
-      }
-      
-      usedKeys.push(availableKey);
-      localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
-      
-      document.getElementById('display-key').textContent = availableKey;
-      document.getElementById('key-result-box').classList.add('show');
-      document.getElementById('copy-key-btn').classList.remove('admin');
-      document.getElementById('stock-count').textContent = keyList.length - usedKeys.length;
-      
+// ========== QUAN TRỌNG — Ẩn nút NHẬN KEY khi vừa mở trang ==========
+function resetKeyButtonIfNeeded() {
+  // Kiểm tra nếu chưa đăng nhập admin
+  if (!isAdmin) {
+    // Xóa trạng thái cũ khi vừa mở trang (chưa bấm đi link)
+    const cameFromLink = sessionStorage.getItem('cameFromLink4M');
+    if (!cameFromLink) {
       localStorage.removeItem('keyProcessStarted');
+    }
+    document.getElementById('receive-key-btn').style.display = 'none';
+  }
+}
+
+// Chuyển tab
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Chế độ Admin
+function applyAdminMode() {
+  if (isAdmin) {
+    document.getElementById('mode-label').innerHTML = 'Quản Trị Viên <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Bỏ Qua Link4M</span>';
+    document.getElementById('hero-status').classList.add('admin-mode');
+    document.getElementById('hero-status').innerHTML = '<span></span> 🔐 CHẾ ĐỘ ADMIN — Nhận Key Trực Tiếp Không Cần Vượt Link';
+    document.getElementById('hero-desc').textContent = 'Bạn đang đăng nhập quản trị viên. Bỏ qua toàn bộ bước xác minh Link4M.';
+    document.getElementById('main-btn-text').textContent = '⚡ TẠO KEY NGAY (Bỏ Qua Link)';
+    document.getElementById('key-icon-box').classList.add('admin');
+    document.getElementById('stock-badge-box').classList.add('admin');
+    document.getElementById('steps-box').classList.add('admin');
+    document.getElementById('getkey-main-desc').textContent = 'Chế độ Admin: bấm nút → nhận key ngay không cần vượt Link4M!';
+    document.getElementById('after-link-notice').style.display = 'none';
+    document.getElementById('receive-key-btn').style.display = 'none';
+  } else {
+    document.getElementById('mode-label').textContent = 'Tải File & Lấy Khóa';
+    document.getElementById('hero-status').classList.remove('admin-mode');
+    document.getElementById('hero-status').innerHTML = '<span></span> Tải Trực Tiếp • Không Chờ Đợi';
+    document.getElementById('hero-desc').textContent = 'Tải file trực tiếp. Nhận key sau khi vượt Link4M.';
+    document.getElementById('main-btn-text').textContent = 'BẮT ĐẦU LẤY KHÓA';
+    document.getElementById('key-icon-box').classList.remove('admin');
+    document.getElementById('stock-badge-box').classList.remove('admin');
+    document.getElementById('steps-box').classList.remove('admin');
+    document.getElementById('getkey-main-desc').textContent = 'Vượt Link4M → quay lại → nhận key tự động!';
+    document.getElementById('after-link-notice').style.display = 'block';
+  }
+}
+applyAdminMode();
+
+// Đăng nhập Admin
+function adminLogin(e) {
+  e.preventDefault();
+  const u = document.getElementById('admin-user').value.trim();
+  const p = document.getElementById('admin-pass').value.trim();
+  
+  if (u === ADMIN_USER && p === ADMIN_PASS) {
+    isAdmin = true;
+    localStorage.setItem('isAdminLoggedIn', 'true');
+    document.getElementById('admin-login-view').style.display = 'none';
+    document.getElementById('admin-dashboard-view').style.display = 'block';
+    applyAdminMode();
+    updateStockDisplay();
+  } else {
+    document.getElementById('admin-login-error').style.display = 'block';
+  }
+}
+
+// Đăng xuất Admin
+function adminLogout() {
+  isAdmin = false;
+  localStorage.removeItem('isAdminLoggedIn');
+  localStorage.removeItem('keyProcessStarted');
+  sessionStorage.removeItem('cameFromLink4M');
+  document.getElementById('admin-login-view').style.display = 'block';
+  document.getElementById('admin-dashboard-view').style.display = 'none';
+  document.getElementById('admin-user').value = '';
+  document.getElementById('admin-pass').value = '';
+  document.getElementById('admin-login-error').style.display = 'none';
+  applyAdminMode();
+  resetKeyButtonIfNeeded();
+}
+
+// Admin tạo key trực tiếp
+function adminGetKey() {
+  const availableKey = keyList.find(k => !usedKeys.includes(k));
+  if (!availableKey) {
+    alert('❌ Hết key trong kho!');
+    return;
+  }
+  
+  usedKeys.push(availableKey);
+  localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
+  lastAdminKey = availableKey;
+  
+  document.getElementById('display-key').textContent = availableKey;
+  document.getElementById('key-result-box').classList.add('show', 'admin-mode');
+  document.getElementById('copy-key-btn').classList.add('admin');
+  document.getElementById('admin-new-key').textContent = availableKey;
+  document.getElementById('admin-gen-result').style.display = 'block';
+  
+  updateStockDisplay();
+  switchTab('getkey');
+}
+
+// ========== NGƯỜI DÙNG THƯỜNG — Bắt đầu vượt link ==========
+function startKeyProcess() {
+  localStorage.setItem('keyProcessStarted', 'true');
+  sessionStorage.setItem('cameFromLink4M', 'true'); // Đánh dấu đã chủ động bấm đi link
+  alert('✅ Đang mở Link4M...\n\nHoàn thành vượt link xong → QUAY LẠI trang này → bấm "NHẬN KEY NGAY"');
+}
+
+// ========== Nhận key sau khi quay lại ==========
+function assignKey() {
+  // Kiểm tra xem có thực sự đi làm nhiệm vụ không
+  if (!localStorage.getItem('keyProcessStarted')) {
+    alert('⚠️ Bạn chưa hoàn thành bước vượt Link4M!');
+    return;
+  }
+
+  const availableKey = keyList.find(k => !usedKeys.includes(k));
+  if (!availableKey) {
+    alert('❌ Hết key trong kho!');
+    return;
+  }
+  
+  usedKeys.push(availableKey);
+  localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
+  
+  // Hiển thị key
+  document.getElementById('display-key').textContent = availableKey;
+  document.getElementById('key-result-box').classList.add('show');
+  document.getElementById('copy-key-btn').classList.remove('admin');
+  
+  // ✅ XÓA hết đánh dấu sau khi nhận key — không bấm lại được
+  localStorage.removeItem('keyProcessStarted');
+  sessionStorage.removeItem('cameFromLink4M');
+  document.getElementById('receive-key-btn').style.display = 'none';
+  
+  updateStockDisplay();
+}
+
+// Sao chép key
+function copyKey() {
+  const key = document.getElementById('display-key').textContent;
+  navigator.clipboard.writeText(key).then(() => alert('✅ Đã sao chép!'));
+}
+function copyAdminKey() {
+  navigator.clipboard.writeText(lastAdminKey).then(() => alert('✅ Đã sao chép key!'));
+}
+
+// Reset lấy key mới
+function resetKeyProcess() {
+  document.getElementById('key-result-box').classList.remove('show', 'admin-mode');
+  document.getElementById('admin-gen-result').style.display = 'none';
+  // Reset trạng thái để có thể làm lại
+  localStorage.removeItem('keyProcessStarted');
+  sessionStorage.removeItem('cameFromLink4M');
+  document.getElementById('receive-key-btn').style.display = 'none';
+}
+
+// Kiểm tra key
+function checkKeyStatus(e) {
+  e.preventDefault();
+  const input = document.getElementById('check-key-input').value.trim().toUpperCase();
+  const box = document.getElementById('check-result-box');
+  
+  if (usedKeys.includes(input)) {
+    box.className = 'check-result valid';
+    box.innerHTML = `<p style="color: #86efac; font-weight:600;"><i class="fa-solid fa-circle-check"></i> Key Hợp Lệ ✅</p><p style="font-size:13px; color:#94a3b8; margin-top:6px;">Đã cấp và còn hạn sử dụng.</p>`;
+  } else if (keyList.includes(input)) {
+    box.className = 'check-result valid';
+    box.innerHTML = `<p style="color: #fde047; font-weight:600;"><i class="fa-solid fa-clock"></i> Chưa Được Phát Hành ⏳</p><p style="font-size:13px; color:#94a3b8; margin-top:6px;">Key tồn tại trong kho nhưng chưa được cấp.</p>`;
+  } else {
+    box.className = 'check-result invalid';
+    box.innerHTML = `<p style="color: #fca5a5; font-weight:600;"><i class="fa-solid fa-circle-xmark"></i> Không Hợp Lệ ❌</p><p style="font-size:13px; color:#94a3b8; margin-top:6px;">Không tồn tại hoặc đã hết hạn.</p>`;
+  }
+}
+
+// Reset toàn bộ key
+function resetAllKeys() {
+  if (confirm('XÓA HẾT lịch sử key đã dùng? Không thể hoàn tác!')) {
+    usedKeys = [];
+    localStorage.removeItem('usedKeys');
+    updateStockDisplay();
+    alert('✅ Đã xóa toàn bộ lịch sử! Key có thể phân phối lại.');
+  }
+}
+
+// Chuyển tab nhanh
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+  document.getElementById(`tab-${tabId}`).classList.add('active');
+}
+
+// ========== KHI TRANG TẢI XONG — KIỂM TRA & ẨN HIỆN NÚT ==========
+window.addEventListener('load', () => {
+  if (isAdmin) {
+    document.getElementById('admin-login-view').style.display = 'none';
+    document.getElementById('admin-dashboard-view').style.display = 'block';
+  } else {
+    // Chỉ hiện nút nhận key khi đã bấm đi link rồi quay lại
+    const started = localStorage.getItem('keyProcessStarted');
+    if (started === 'true') {
+      document.getElementById('receive-key-btn').style.display = 'inline-flex';
+    } else {
       document.getElementById('receive-key-btn').style.display = 'none';
     }
-
-    // Sao chép key
-    function copyKey() {
-      const key = document.getElementById('display-key').textContent;
-      navigator.clipboard.writeText(key).then(() => alert('✅ Đã sao chép!'));
-    }
-    function copyAdminKey() {
-      navigator.clipboard.writeText(lastAdminKey).then(() => alert('✅ Đã sao chép key!'));
-    }
-
-    // Reset lấy key mới
-    function resetKeyProcess() {
-      document.getElementById('key-result-box').classList.remove('show', 'admin-mode');
-      document.getElementById('admin-gen-result').style.display = 'none';
-    }
-
-    // Kiểm tra key
-    function checkKeyStatus(e) {
-      e.preventDefault();
-      const input = document.getElementById('check-key-input').value.trim().toUpperCase();
-      const box = document.getElementById('check-result-box');
-      
-      if (usedKeys.includes(input)) {
-        box.className = 'check-result valid';
-        box.innerHTML = `<p style="color: #86efac; font-weight:600;"><i class="fa-solid fa-circle-check"></i> Key Hợp Lệ ✅</p><p style="font-size:13px; color:#94a3b8; margin-top:6px;">Đã cấp và còn hạn sử dụng.</p>`;
-      } else if (keyList.includes(input)) {
-        box.className = 'check-result valid';
-        box.innerHTML = `<p style="color: #fde047; font-weight:600;"><i class="fa-solid fa-clock"></i> Chưa Được Phát Hành ⏳</p><p style="font-size:13px; color:#94a3b8; margin-top:6px;">Key tồn tại trong kho nhưng chưa được cấp.</p>`;
-      } else {
-        box.className = 'check-result invalid';
-        box.innerHTML = `<p style="color: #fca5a5; font-weight:600;"><i class="fa-solid fa-circle-xmark"></i> Không Hợp Lệ ❌</p><p style="font-size:13px; color:#94a3b8; margin-top:6px;">Không tồn tại hoặc đã hết hạn.</p>`;
-      }
-    }
-
-    // Reset toàn bộ key
-    function resetAllKeys() {
-      usedKeys = [];
-      localStorage.removeItem('usedKeys');
-      updateStockDisplay();
-      alert('✅ Đã xóa toàn bộ lịch sử! Key có thể phân phối lại.');
-    }
-
-    // Chuyển tab nhanh
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-      document.getElementById(`tab-${tabId}`).classList.add('active');
-    }
-
-    // Tự hiện nút nhận key nếu đã bắt đầu
-    window.addEventListener('load', () => {
-      if (localStorage.getItem('keyProcessStarted') === 'true' && !isAdmin) {
-        document.getElementById('receive-key-btn').style.display = 'inline-flex';
-      }
-      // Hiển thị dashboard nếu đã đăng nhập admin
-      if (isAdmin) {
-        document.getElementById('admin-login-view').style.display = 'none';
-        document.getElementById('admin-dashboard-view').style.display = 'block';
-      }
-    });
+  }
+});
   </script>
   // ========== KIỂM TRA THẬT — CHỈ CẤP KEY KHI ĐÃ QUAY LẠI ==========
 let keyProcessStarted = false;
