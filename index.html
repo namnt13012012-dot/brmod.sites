@@ -394,7 +394,7 @@
   <script>
     // ========== TÀI KHOẢN ADMIN — THAY ĐỔI Ở ĐÂY ==========
     const ADMIN_USER = 'admin';      // Tên tài khoản admin
-    const ADMIN_PASS = 'admin123';   // Mật khẩu admin — đổi thành mật khẩu của bạn!
+    const ADMIN_PASS = 'nguyenthanhnam@1301';   // Mật khẩu admin — đổi thành mật khẩu của bạn!
 
     // ========== DANH SÁCH 1000 KEY TỰ ĐỘNG TẠO ==========
     const keyList = [];
@@ -611,5 +611,46 @@
       }
     });
   </script>
+  // ========== KIỂM TRA THẬT — CHỈ CẤP KEY KHI ĐÃ QUAY LẠI ==========
+let keyProcessStarted = false;
+
+// Khi nhấn nút đi vượt link
+function startKeyProcess() {
+  keyProcessStarted = true;
+  localStorage.setItem('keyProcessStarted', 'true');
+  alert('✅ Đang mở Link4M...\n\nHoàn thành vượt link xong → QUAY LẠI trang này → bấm "NHẬN KEY"');
+  // Nút nhận key sẽ hiện sau khi quay lại
+}
+
+// Khi trang vừa mở/tải lại → kiểm tra
+window.addEventListener('load', () => {
+  const started = localStorage.getItem('keyProcessStarted');
+  if (started === 'true' && !isAdmin) {
+    // Đã bấm đi link4m trước đó → hiện nút nhận key
+    document.getElementById('receive-key-btn').style.display = 'inline-flex';
+  }
+});
+
+// Khi nhấn nhận key → XÓA đánh dấu để không lấy lại được
+function assignKey() {
+  // Tìm key khả dụng
+  const availableKey = keyList.find(k => !usedKeys.includes(k));
+  if (!availableKey) {
+    alert('❌ Hết key!');
+    return;
+  }
+  
+  // Cấp key
+  usedKeys.push(availableKey);
+  localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
+  
+  // Hiển thị key
+  document.getElementById('display-key').textContent = availableKey;
+  document.getElementById('key-result-box').classList.add('show');
+  
+  // ✅ QUAN TRỌNG: XÓA đánh dấu → không bấm lại được
+  localStorage.removeItem('keyProcessStarted');
+  document.getElementById('receive-key-btn').style.display = 'none';
+}
 </body>
 </html>
