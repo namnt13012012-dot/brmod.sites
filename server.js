@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // ===== CẤU HÌNH =====
-const SECRET_KEY = 'BrModSites_2026_KhoaBiMat_ABC123xyz';
+const SECRET_KEY = 'nguyenthanhnam@1301';
 const CONFIG = {
   siteUrl: 'https://brmod-sites.onrender.com',
   minWaitSeconds: 10,
