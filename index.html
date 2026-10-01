@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BRMOD — Lấy Khóa Kích Hoạt</title>
+  <title>BRMOD — Lấy Khóa & Tải Công Cụ</title>
   
   <style>
     * {
@@ -30,6 +30,7 @@
       text-align: center;
       color: #22c55e;
       margin-bottom: 10px;
+      font-size: 24px;
     }
 
     .subtitle {
@@ -57,15 +58,8 @@
       border-bottom: none;
     }
 
-    .val-green {
-      color: #22c55e;
-      font-weight: bold;
-    }
-
-    .val-yellow {
-      color: #eab308;
-      font-weight: bold;
-    }
+    .val-green { color: #22c55e; font-weight: bold; }
+    .val-yellow { color: #eab308; font-weight: bold; }
 
     button {
       width: 100%;
@@ -76,22 +70,18 @@
       cursor: pointer;
       font-weight: bold;
       transition: 0.2s;
+      margin-top: 10px;
     }
 
-    .btn-primary {
-      background: #22c55e;
-      color: #000;
-    }
+    .btn-primary { background: #22c55e; color: #000; }
+    .btn-primary:hover { background: #16a34a; }
+    .btn-primary:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
 
-    .btn-primary:hover {
-      background: #16a34a;
-    }
+    .btn-download { background: #3b82f6; color: #fff; display: none; }
+    .btn-download:hover { background: #2563eb; }
 
-    .btn-primary:disabled {
-      background: #475569;
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
+    .btn-link4m { background: #f59e0b; color: #000; display: none; }
+    .btn-link4m:hover { background: #d97706; }
 
     .result {
       margin-top: 20px;
@@ -124,25 +114,10 @@
       color: #22c55e;
     }
 
-    .countdown {
-      text-align: center;
-      margin-top: 10px;
-      color: #94a3b8;
-    }
-
-    .yt-link {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .yt-link a {
-      color: #3b82f6;
-      text-decoration: none;
-    }
-
     .loading {
       text-align: center;
       display: none;
+      padding: 15px;
     }
 
     .spinner {
@@ -160,12 +135,20 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    .yt-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .yt-link a { color: #3b82f6; text-decoration: none; }
+    .note { margin-top: 15px; font-size: 13px; color: #94a3b8; text-align: center; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🔑 BRMOD — Lấy Khóa Kích Hoạt</h1>
-    <p class="subtitle">Hệ thống chống tự động lấy khóa — HMAC-SHA256</p>
+    <h1>🔑 BRMOD — Lấy Khóa & Tải Công Cụ</h1>
+    <p class="subtitle">Bước 1: Nhận khóa → Bước 2: Mở Link4m → Bước 3: Tải công cụ</p>
 
     <div class="card">
       <div class="stat-row">
@@ -174,11 +157,7 @@
       </div>
       <div class="stat-row">
         <span>Số khóa còn lại</span>
-        <span id="avail-keys">---</span>
-      </div>
-      <div class="stat-row">
-        <span>Giới hạn / IP</span>
-        <span id="ip-limit">2 khóa / ngày</span>
+        <span id="avail-keys" class="val-yellow">---</span>
       </div>
       <div class="stat-row">
         <span>Đã nhận hôm nay</span>
@@ -188,51 +167,59 @@
 
     <div class="card">
       <button id="claim-btn" class="btn-primary" onclick="claimKey()">
-        NHẬN KHÓA MIỄN PHÍ
+        BƯỚC 1: NHẬN KHÓA
       </button>
       
       <div class="loading" id="loading">
-        Đang xử lý...
-        <span class="spinner"></span>
+        Đang xử lý... <span class="spinner"></span>
       </div>
       
       <div id="result-box" class="result">
         <p id="result-msg"></p>
         <div id="key-display" class="key-box"></div>
-        <p id="expire-info"></p>
+        <p id="expire-info" style="text-align:center; color:#94a3b8; font-size:14px;"></p>
       </div>
+
+      <!-- Bước 2: Link4m — HIỆN SAU KHI CÓ KEY -->
+      <button id="link4m-btn" class="btn-link4m" onclick="openLink4m()">
+        BƯỚC 2: MỞ LINK4M → NHẬN LINK TẢI
+      </button>
+
+      <!-- Bước 3: Tải xuống — HIỆN SAU KHI BƯỚC 2 -->
+      <button id="download-btn" class="btn-download" onclick="openDownload()">
+        BƯỚC 3: TẢI CÔNG CỤ VỀ MÁY
+      </button>
     </div>
 
+    <p class="note">💡 Sau khi có khóa, bạn phải qua Link4m rồi mới thấy link tải chính thức</p>
+
     <div class="yt-link">
-      <p>
-        Kênh hỗ trợ:
-        <a id="yt-channel" href="" target="_blank">@quocthaipc</a>
-      </p>
+      <p>Kênh hỗ trợ: <a id="yt-channel" href="#" target="_blank">@quocthaipc</a></p>
     </div>
   </div>
 
   <script>
+    // ===== CẤU HÌNH LINK CỦA BẠN =====
+    const LINK4M_URL = 'https://link4m.com/your-link-day-ngay'; // 🔄 SỬA LINK CỦA BẠN
+    const DOWNLOAD_URL = 'https://link-tai-cong-cu-cua-ban.com'; // 🔄 SỬA LINK TẢI CỦA BẠN
+
     const API = window.location.origin;
     let waitTime = 0;
     let timer = null;
 
-    // === Tải thông tin hệ thống ===
+    // Tải thông tin hệ thống
     async function loadInfo() {
       try {
         const res = await fetch(`${API}/info`);
         const data = await res.json();
         
         document.getElementById('avail-keys').textContent = data.availableKeys;
-        document.getElementById('ip-used').textContent = 
-          `${data.ipClaimsToday} / ${data.maxKeysPerIp}`;
+        document.getElementById('ip-used').textContent = `${data.ipClaimsToday} / ${data.maxKeysPerIp}`;
         document.getElementById('yt-channel').href = data.youtube.channelUrl;
-        document.getElementById('ip-limit').textContent = 
-          `${data.maxKeysPerIp} khóa / ngày`;
         
         if (data.iplimitReached) {
-          const btn = document.getElementById('claim-btn');
-          btn.disabled = true;
-          btn.textContent = 'ĐÃ ĐẠT GIỚI HẠN';
+          document.getElementById('claim-btn').disabled = true;
+          document.getElementById('claim-btn').textContent = 'ĐÃ ĐẠT GIỚI HẠN — Đợi ngày mai';
         }
       } catch (e) {
         const status = document.getElementById('sys-status');
@@ -241,7 +228,7 @@
       }
     }
 
-    // === Đếm ngược chống nhấn liên tục ===
+    // Đếm ngược
     function startCountdown(seconds) {
       waitTime = seconds;
       const btn = document.getElementById('claim-btn');
@@ -249,66 +236,82 @@
       
       timer = setInterval(() => {
         waitTime--;
-        btn.textContent = `Vui lòng đợi ${waitTime}s...`;
-        
+        btn.textContent = `Đợi ${waitTime}s...`;
         if (waitTime <= 0) {
           clearInterval(timer);
           btn.disabled = false;
-          btn.textContent = 'NHẬN KHÓA MIỄN PHÍ';
+          btn.textContent = 'BƯỚC 1: NHẬN KHÓA';
         }
       }, 1000);
     }
 
-    // === Nhận khóa ===
+    // Mở Link4m
+    function openLink4m() {
+      window.open(LINK4M_URL, '_blank');
+      // Hiện nút Tải sau khi mở Link4m
+      document.getElementById('download-btn').style.display = 'block';
+    }
+
+    // Mở link Tải
+    function openDownload() {
+      window.open(DOWNLOAD_URL, '_blank');
+    }
+
+    // Nhận khóa
     async function claimKey() {
       if (waitTime > 0) return;
       
       const btn = document.getElementById('claim-btn');
       const loading = document.getElementById('loading');
       const resultBox = document.getElementById('result-box');
-      const resultMsg = document.getElementById('result-msg');
-      const keyDisplay = document.getElementById('key-display');
-      const expireInfo = document.getElementById('expire-info');
+      const link4mBtn = document.getElementById('link4m-btn');
       
       btn.disabled = true;
       btn.style.display = 'none';
       loading.style.display = 'block';
       resultBox.style.display = 'none';
+      link4mBtn.style.display = 'none';
+      document.getElementById('download-btn').style.display = 'none';
 
       try {
-        // Bước 1: Lấy token HMAC
-        const tokenRes = await fetch(`${API}/GenerateT`, {
+        // Lấy token bảo mật
+        const tRes = await fetch(`${API}/GenerateT`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'claim' })
         });
-        const [token, timestamp] = await tokenRes.json();
+        const [token, timestamp] = await tRes.json();
 
-        // Bước 2: Gọi nhận khóa
-        const keyRes = await fetch(`${API}/claim-key`, {
+        // Nhận key
+        const res = await fetch(`${API}/claim-key`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token, timestamp })
         });
 
-        const data = await keyRes.json();
+        const data = await res.json();
 
         loading.style.display = 'none';
         btn.style.display = 'block';
 
         if (data.success) {
           resultBox.className = 'result success';
-          resultMsg.textContent = '✅ Nhận khóa thành công!';
-          keyDisplay.textContent = data.key.key;
+          resultBox.style.display = 'block';
+          document.getElementById('result-msg').textContent = '✅ Nhận khóa thành công!';
+          document.getElementById('key-display').textContent = data.key.key;
           
           const exp = new Date(data.key.expiresAt);
-          expireInfo.textContent = 
-            `Hết hạn: ${exp.toLocaleString('vi-VN')}`;
+          document.getElementById('expire-info').textContent = 
+            `Hạn sử dụng: ${exp.toLocaleString('vi-VN')}`;
+
+          // ✅ HIỆN NÚT BƯỚC 2 — Link4m
+          link4mBtn.style.display = 'block';
           
           startCountdown(10);
         } else {
           resultBox.className = 'result error';
-          resultMsg.textContent = '❌ ' + data.error;
+          resultBox.style.display = 'block';
+          document.getElementById('result-msg').textContent = '❌ ' + data.error;
           
           if (data.error.includes('giới hạn')) {
             btn.disabled = true;
@@ -319,13 +322,14 @@
         loading.style.display = 'none';
         btn.style.display = 'block';
         resultBox.className = 'result error';
-        resultMsg.textContent = '❌ Lỗi kết nối, thử lại sau';
+        resultBox.style.display = 'block';
+        document.getElementById('result-msg').textContent = '❌ Lỗi kết nối, thử lại sau';
       }
 
       loadInfo();
     }
 
-    // === Khởi động ===
+    // Khởi động
     loadInfo();
   </script>
 </body>
