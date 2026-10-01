@@ -6,10 +6,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ===== CẤU HÌNH CHÍNH SỬA Ở ĐÂY =====
-const SECRET_KEY = 'ThayKhoaBiMatCuaBan123'; // Đổi thành chuỗi riêng
+// ===== CẤU HÌNH =====
+const SECRET_KEY = 'BrModSites_2026_KhoaBiMat_ABC123xyz';
 const CONFIG = {
-  siteUrl: 'https://brmodgetkey.onrender.com',
+  siteUrl: 'https://brmod-sites.onrender.com', // ✅ Đã đổi link của bạn
   minWaitSeconds: 10,
   maxKeysPerIp: 2,
   hasLink4mKey: true,
@@ -20,14 +20,14 @@ const CONFIG = {
   }
 };
 
-// ===== SỐ LƯỢNG KEY — SỬA Ở ĐÂY =====
-let availableKeys = 1000; // Muốn bao nhiêu thì đổi số này
+// ===== SỐ LƯỢNG KEY =====
+let availableKeys = 1000; // ✅ Đã là 1000
 
 // ===== DỮ LIỆU =====
 const users = new Map();
 const ipClaims = new Map();
 
-// ===== TẠO MÃ HMAC =====
+// ===== TẠO HMAC =====
 function generateHMAC(data, timestamp) {
   const str = JSON.stringify(data) + timestamp;
   return crypto
@@ -39,7 +39,7 @@ function generateHMAC(data, timestamp) {
     .replace(/=/g, '');
 }
 
-// ===== TẠO KEY MỚI =====
+// ===== TẠO KEY =====
 function createKey(durationHours = 5) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
@@ -58,7 +58,7 @@ function createKey(durationHours = 5) {
   };
 }
 
-// ===== API: /info =====
+// ===== API /info =====
 app.get('/info', (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress;
   const ipData = ipClaims.get(clientIp) || { count: 0 };
@@ -78,7 +78,7 @@ app.get('/info', (req, res) => {
   });
 });
 
-// ===== API: /me =====
+// ===== API /me =====
 app.get('/me', (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress;
   const userId = `usr_${crypto.createHash('md5').update(clientIp + Date.now()).digest('hex').slice(0, 10)}`;
@@ -105,7 +105,7 @@ app.get('/me', (req, res) => {
   });
 });
 
-// ===== API: /sync-keys =====
+// ===== API /sync-keys =====
 app.get('/sync-keys', (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress;
   const userId = Array.from(users.entries()).find(([_, u]) => u.claimedKeys.length > 0)?.[0] 
@@ -126,7 +126,7 @@ app.get('/sync-keys', (req, res) => {
   });
 });
 
-// ===== API: /GenerateT =====
+// ===== API /GenerateT =====
 app.post('/GenerateT', (req, res) => {
   const timestamp = Math.floor(Date.now() / 1000);
   const data = req.body || [];
@@ -134,7 +134,7 @@ app.post('/GenerateT', (req, res) => {
   res.json([token, timestamp, 100]);
 });
 
-// ===== API: Nhận khóa =====
+// ===== API Nhận khóa =====
 app.post('/claim-key', (req, res) => {
   const clientIp = req.ip || req.connection.remoteAddress;
   const ipData = ipClaims.get(clientIp) || { count: 0 };
