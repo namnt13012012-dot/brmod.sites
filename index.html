@@ -4,543 +4,365 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>KEY HUB — Tải Tệp & Lấy Khóa Nhanh</title>
-  <meta name="description" content="Nền tảng chia sẻ tệp và cấp khóa tích hợp hệ thống bảo vệ chống bỏ qua Link4M.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2322c55e'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#22c55e">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>KEY HUB — Tải File & Lấy Khóa</title>
+  <meta name="description" content="Hệ thống chia sẻ file và cấp key kích hoạt tích hợp Link4M">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2322c55e'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 6h2v2h-2V8zm0 4h2v6h-2v-6z'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
   <style>
     :root {
-      --bg-main: #050816;
-      --bg-surface: #0b1220;
+      --bg-dark: #050816;
       --bg-card: #111a2f;
-      --bg-card-elevated: #182542;
-      --border-light: rgba(255, 255, 255, 0.06);
-      --accent-primary: #22c55e;
-      --accent-secondary: #3b82f6;
-      --accent-tertiary: #f97316;
-      --accent-warning: #eab308;
+      --bg-card-2: #182542;
+      --accent-green: #22c55e;
+      --accent-blue: #3b82f6;
+      --accent-orange: #f97316;
       --text-white: #ffffff;
-      --text-soft: #cbd5e1;
-      --text-muted: #7c8db5;
-      --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.45);
-      --shadow-glow-green: 0 0 20px rgba(34, 197, 94, 0.25);
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 16px;
-      --radius-pill: 999px;
-      --font-sans: 'Segoe UI', system-ui, Roboto, sans-serif;
-      --font-mono: 'Consolas', 'Monaco', monospace;
+      --text-dim: #94a3b8;
+      --border: rgba(255,255,255,0.08);
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: var(--font-sans);
-      background: linear-gradient(135deg, #050816 0%, #0f172a 100%);
-      color: var(--text-white);
-      min-height: 100vh;
-      line-height: 1.6;
-    }
-
-    .bg-layer {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .bg-blob {
-      position: absolute;
-      border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-      filter: blur(90px);
-      opacity: 0.12;
-      animation: blobShift 25s infinite alternate ease-in-out;
-    }
-    .bg-blob.a { width: 500px; height: 500px; background: var(--accent-primary); top: -150px; left: -100px; }
-    .bg-blob.b { width: 450px; height: 450px; background: var(--accent-secondary); bottom: -120px; right: -80px; animation-delay: -8s; }
-    .bg-blob.c { width: 380px; height: 380px; background: var(--accent-tertiary); top: 35%; left: 45%; animation-delay: -15s; }
-
-    @keyframes blobShift {
-      0% { transform: translate(0, 0) rotate(0deg) scale(1); }
-      33% { transform: translate(50px, -30px) rotate(120deg) scale(1.1); }
-      66% { transform: translate(-40px, 40px) rotate(240deg) scale(0.95); }
-      100% { transform: translate(30px, 20px) rotate(360deg) scale(1.05); }
-    }
-
-    .page-container {
-      position: relative;
-      z-index: 1;
-      max-width: 1140px;
-      margin: 0 auto;
-      padding: 0 20px 60px;
-    }
-
-    .top-nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 28px 0;
-      border-bottom: 1px solid var(--border-light);
-      margin-bottom: 42px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      text-decoration: none;
-    }
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      border-radius: var(--radius-md);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      font-weight: bold;
-      box-shadow: var(--shadow-glow-green);
-    }
-    .brand-name {
-      font-size: 19px;
-      font-weight: 700;
-      background: linear-gradient(90deg, #fff, #94a3b8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .nav-tabs {
-      display: flex;
-      gap: 6px;
-      background: rgba(17, 24, 42, 0.6);
-      padding: 5px;
-      border-radius: var(--radius-pill);
-      border: 1px solid var(--border-light);
-      flex-wrap: wrap;
-    }
-    .tab-btn {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      padding: 9px 20px;
-      border-radius: var(--radius-pill);
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .tab-btn:hover { color: var(--text-soft); }
-    .tab-btn.active {
-      background: linear-gradient(135deg, rgba(34, 197, 94, 0.18), rgba(59, 130, 246, 0.18));
-      color: #fff;
-      border: 1px solid rgba(34, 197, 94, 0.35);
-    }
-
-    .hero-block {
-      text-align: center;
-      padding: 30px 0 45px;
-    }
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
-      border-radius: var(--radius-pill);
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.25);
-      color: var(--accent-primary);
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 18px;
-    }
-    .hero-badge .live-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--accent-primary);
-      box-shadow: 0 0 8px var(--accent-primary);
-      animation: blink 1.6s infinite;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-    .hero-title {
-      font-size: 38px;
-      font-weight: 800;
-      margin-bottom: 14px;
-    }
-    .hero-gradient-text {
-      background: linear-gradient(90deg, #22c55e, #3b82f6, #f97316);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .hero-desc {
-      color: var(--text-soft);
-      font-size: 16px;
-      max-width: 600px;
-      margin: 0 auto 28px;
-    }
-
-    .tab-pane { display: none; animation: fadeUp 0.35s ease forwards; }
-    .tab-pane.show { display: block; }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .files-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 18px;
-    }
-    .file-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 22px;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .file-card:hover {
-      background: var(--bg-card-elevated);
-      border-color: rgba(34, 197, 94, 0.25);
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-soft), 0 0 18px rgba(34, 197, 94, 0.1);
-    }
-    .file-head {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-    }
-    .file-icon-wrap {
-      width: 46px; height: 46px;
-      border-radius: var(--radius-md);
-      background: rgba(34, 197, 94, 0.1);
-      border: 1px solid rgba(34, 197, 94, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: var(--accent-primary);
-      flex-shrink: 0;
-    }
-    .file-name { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
-    .file-meta-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .tag {
-      font-size: 10.5px; font-weight: 600;
-      padding: 2px 8px; border-radius: var(--radius-sm);
-    }
-    .tag-ver { background: rgba(59, 130, 246, 0.12); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.25); }
-    .tag-size { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
-    .tag-locked { background: rgba(249, 115, 22, 0.12); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.25); }
-    .tag-free { background: rgba(34, 197, 94, 0.12); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.25); }
-    .file-desc { color: var(--text-muted); font-size: 13px; line-height: 1.5; }
-    .file-foot {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 12px;
-      border-top: 1px solid var(--border-light);
-      margin-top: auto;
-    }
-    .btn {
-      padding: 9px 18px;
-      border-radius: var(--radius-sm);
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      border: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      transition: all 0.2s ease;
-      text-decoration: none;
-    }
-    .btn-direct {
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      color: #000;
-    }
-    .btn-direct:hover { filter: brightness(1.1); transform: scale(1.02); }
-    .btn-link4m {
-      background: linear-gradient(135deg, var(--accent-tertiary), #ea580c);
-      color: #fff;
-    }
-    .btn-link4m:hover { filter: brightness(1.1); transform: scale(1.02); }
-
-    .getkey-container {
-      max-width: 640px;
-      margin: 0 auto;
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 36px;
-      text-align: center;
-      box-shadow: var(--shadow-soft);
-    }
-    .key-icon-circle {
-      width: 76px; height: 76px;
-      margin: 0 auto 20px;
-      border-radius: 50%;
-      background: rgba(34, 197, 94, 0.1);
-      border: 2px solid rgba(34, 197, 94, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      color: var(--accent-primary);
-      animation: floatBounce 3.5s infinite alternate ease-in-out;
-    }
-    @keyframes floatBounce {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-8px); }
-    }
-    .getkey-title { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
-    .getkey-desc { color: var(--text-soft); margin-bottom: 24px; }
-    .key-btn-main {
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      color: #000;
-      border: none;
-      font-size: 16px;
-      font-weight: 800;
-      padding: 14px 32px;
-      border-radius: var(--radius-pill);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.3s ease;
-      box-shadow: var(--shadow-glow-green);
-      text-decoration: none;
-    }
-    .key-btn-main:hover { transform: scale(1.03); }
-    .note-box {
-      margin-top: 24px;
-      padding: 16px;
-      background: rgba(59, 130, 246, 0.08);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: var(--radius-md);
-      font-size: 13px;
-      color: #bfdbfe;
-    }
-
-    .check-section, .vault-section {
-      max-width: 560px;
-      margin: 0 auto;
-      background: var(--bg-card);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 30px;
-    }
-    .form-field { margin-bottom: 18px; text-align: left; }
-    .form-label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-soft);
-      margin-bottom: 6px;
-    }
-    .form-input {
-      width: 100%;
-      padding: 12px 16px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-sm);
-      color: #fff;
-      font-family: var(--font-mono);
-      font-size: 14px;
-      outline: none;
-      transition: border 0.2s ease;
-    }
-    .form-input:focus { border-color: var(--accent-primary); }
-    .submit-btn {
-      width: 100%;
-      padding: 13px;
-      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-      color: #000;
-      font-weight: 800;
-      border: none;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      font-size: 15px;
-      transition: filter 0.2s ease;
-    }
-    .submit-btn:hover { filter: brightness(1.08); }
-    .vault-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-    .vault-item {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-sm);
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .vault-key { font-family: var(--font-mono); font-weight: 700; color: var(--accent-primary); }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-white); min-height: 100vh; line-height: 1.6; }
+    .bg-blob { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.25; z-index: 0; }
+    .blob-1 { width: 400px; height: 400px; background: var(--accent-green); top: -100px; left: -100px; }
+    .blob-2 { width: 350px; height: 350px; background: var(--accent-blue); bottom: -80px; right: -50px; }
+    .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 20px; }
+    
+    /* Header */
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+    .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, var(--accent-green), var(--accent-blue)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .logo-text h1 { font-size: 18px; font-weight: 800; }
+    .logo-text span { font-size: 11px; color: var(--accent-green); }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab-btn { background: transparent; border: none; color: var(--text-dim); padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+    .tab-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .tab-btn.active { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); font-weight: 600; }
+    
+    /* Hero */
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(34, 197, 94, 0.1); color: var(--accent-green); padding: 6px 16px; border-radius: 20px; font-size: 13px; margin-bottom: 16px; }
+    .hero-badge span { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .hero h2 { font-size: 36px; margin-bottom: 12px; }
+    .hero h2 span { background: linear-gradient(90deg, var(--accent-green), var(--accent-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--text-dim); max-width: 600px; margin: 0 auto; }
+    
+    /* Cards Grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 40px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; transition: transform 0.2s, border-color 0.2s; }
+    .card:hover { transform: translateY(-3px); border-color: rgba(34, 197, 94, 0.3); }
+    .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .card-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(34, 197, 94, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent-green); }
+    .card-title h3 { font-size: 16px; font-weight: 700; }
+    .card-meta { display: flex; gap: 8px; margin-top: 4px; }
+    .tag { font-size: 11px; padding: 2px 8px; border-radius: 12px; }
+    .tag-ver { background: rgba(59,130,246,0.15); color: #93c5fd; }
+    .tag-size { background: rgba(255,255,255,0.08); color: var(--text-dim); }
+    .tag-free { background: rgba(34,197,94,0.15); color: #86efac; }
+    .card-desc { color: var(--text-dim); font-size: 13px; margin: 12px 0 18px; }
+    .card-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { flex: 1; min-width: 130px; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; font-size: 13px; }
+    .btn-green { background: linear-gradient(135deg, var(--accent-green), #16a34a); color: #000; }
+    .btn-green:hover { filter: brightness(1.1); }
+    .btn-orange { background: linear-gradient(135deg, var(--accent-orange), #ea580c); color: #fff; }
+    .btn-orange:hover { filter: brightness(1.1); }
+    
+    /* Get Key Section */
+    .getkey-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 36px; max-width: 650px; margin: 0 auto; text-align: center; }
+    .key-icon { width: 64px; height: 64px; border-radius: 14px; background: rgba(34,197,94,0.15); display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--accent-green); margin: 0 auto 20px; }
+    .stock-info { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+    .stock-badge { display: flex; align-items: center; gap: 8px; background: rgba(34,197,94,0.1); color: var(--accent-green); padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+    .stock-badge span { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; }
+    .getkey-title { font-size: 24px; margin-bottom: 10px; }
+    .getkey-desc { color: var(--text-dim); margin-bottom: 24px; }
+    .steps { text-align: left; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .step { display: flex; gap: 12px; margin-bottom: 14px; }
+    .step-num { font-weight: 800; color: var(--accent-green); min-width: 80px; }
+    .step-text { color: var(--text-dim); font-size: 14px; }
+    .btn-main { width: 100%; padding: 14px; font-size: 16px; }
+    .btn-locked { opacity: 0.5; cursor: not-allowed; }
+    .notice { margin-top: 16px; font-size: 12px; color: var(--text-dim); }
+    
+    /* Result Key */
+    .key-result { margin-top: 24px; padding: 24px; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); border-radius: 12px; display: none; }
+    .key-result.show { display: block; animation: fadeIn 0.4s; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+    .key-label { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+    .key-code { font-family: monospace; font-size: 22px; font-weight: 800; color: var(--accent-green); background: rgba(0,0,0,0.4); padding: 14px; border-radius: 8px; margin-bottom: 12px; letter-spacing: 2px; }
+    .key-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .copy-btn { background: var(--accent-green); color: #000; }
+    .new-btn { background: rgba(255,255,255,0.1); color: #fff; }
+    
+    /* Check Key */
+    .check-box { background: var(--bg-card); border-radius: 16px; padding: 30px; max-width: 500px; margin: 0 auto; }
+    .check-box h3 { text-align: center; margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: var(--text-dim); }
+    .form-input { width: 100%; padding: 12px 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
+    .form-input:focus { border-color: var(--accent-green); }
+    .check-result { margin-top: 16px; padding: 14px; border-radius: 8px; display: none; }
+    .check-result.valid { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); display: block; }
+    .check-result.invalid { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); display: block; }
+    
+    /* Tab Content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Footer */
+    footer { text-align: center; padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; color: var(--text-dim); font-size: 13px; }
   </style>
 </head>
 <body>
-  <div class="bg-layer">
-    <div class="bg-blob a"></div>
-    <div class="bg-blob b"></div>
-    <div class="bg-blob c"></div>
-  </div>
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
 
-  <div class="page-container">
-    <nav class="top-nav">
-      <a href="/" class="brand">
-        <div class="brand-mark"><i class="fa-solid fa-key"></i></div>
-        <span class="brand-name">KEY HUB</span>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <a href="/" class="logo">
+        <div class="logo-icon"><i class="fa-solid fa-key"></i></div>
+        <div class="logo-text">
+          <h1>KEY HUB</h1>
+          <span>Tải File & Lấy Khóa</span>
+        </div>
       </a>
-      <div class="nav-tabs">
+      <nav class="tabs">
         <button class="tab-btn active" data-tab="files"><i class="fa-solid fa-folder"></i> Tệp Tin</button>
-        <button class="tab-btn" data-tab="getkey"><i class="fa-solid fa-unlock"></i> Lấy Khóa</button>
-        <button class="tab-btn" data-tab="check"><i class="fa-solid fa-check-circle"></i> Kiểm Tra</button>
-        <button class="tab-btn" data-tab="vault"><i class="fa-solid fa-vault"></i> Kho Khóa</button>
+        <button class="tab-btn" data-tab="getkey"><i class="fa-solid fa-unlock-keyhole"></i> Lấy Khóa</button>
+        <button class="tab-btn" data-tab="check"><i class="fa-solid fa-magnifying-glass"></i> Kiểm Tra Key</button>
+      </nav>
+    </header>
+
+    <!-- TAB 1: DANH SÁCH FILE -->
+    <section class="tab-content active" id="tab-files">
+      <div class="hero">
+        <div class="hero-badge"><span></span> Tải Trực Tiếp • Không Chờ Đợi</div>
+        <h2>Tải Tệp & <span>Nhận Khóa</span> Nhanh</h2>
+        <p>Tải file trực tiếp từ Mediafire. Nhận key kích hoạt miễn phí sau khi vượt Link4M.</p>
       </div>
-    </nav>
 
-    <main>
-      <!-- TAB TỆP TIN -->
-      <section class="tab-pane show" id="tab-files">
-        <div class="hero-block">
-          <div class="hero-badge"><span class="live-dot"></span> Hoạt động — Tải trực tiếp không chờ đợi</div>
-          <h1 class="hero-title">Nền tảng <span class="hero-gradient-text">Tải Tệp & Lấy Khóa</span> Nhanh</h1>
-          <p class="hero-desc">Tải tệp trực tiếp miễn phí • Hệ thống bảo vệ chống bỏ qua Link4M • An toàn & cập nhật thường xuyên</p>
-        </div>
-
-        <div class="files-grid">
-          <!-- Tệp 1 -->
-          <div class="file-card">
-            <div class="file-head">
-              <div class="file-icon-wrap"><i class="fa-solid fa-gear"></i></div>
-              <div>
-                <h3 class="file-name">BRMOD</h3>
-                <div class="file-meta-row">
-                  <span class="tag tag-ver">v2.0</span>
-                  <span class="tag tag-size">120 MB</span>
-                  <span class="tag tag-free">MIỄN PHÍ</span>
-                </div>
+      <div class="grid">
+        <!-- File 1 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon"><i class="fa-solid fa-gear"></i></div>
+            <div class="card-title">
+              <h3>TOOL MOD GAME</h3>
+              <div class="card-meta">
+                <span class="tag tag-ver">v2.0</span>
+                <span class="tag tag-size">120 MB</span>
+                <span class="tag tag-free">MIỄN PHÍ</span>
               </div>
             </div>
-            <p class="file-desc">BRMOD MENU</p>
-            <div class="file-foot">
-              <!-- === THAY LINK MEDIAFIRE 1 Ở ĐÂY === -->
-              <a href="https://www.mediafire.com/file/THAY_LINK_CUA_BAN/file" class="btn btn-direct" target="_blank" rel="noopener">
-                <i class="fa-solid fa-download"></i> Tải Trực Tiếp
-              </a>
-              <!-- === THAY LINK4M 1 Ở ĐÂY === -->
-              <a href="LINK4M_CUA_BAN_1" class="btn btn-link4m" target="_blank" rel="noopener">
-                <i class="fa-solid fa-link"></i> Lấy Khóa
-              </a>
-            </div>
           </div>
+          <p class="card-desc">Công cụ hỗ trợ chơi game, tối ưu hiệu năng, giảm lag.</p>
+          <div class="card-buttons">
+            <a href="https://www.mediafire.com/file/THAY_LINK_CUA_BAN/file1" target="_blank" rel="noopener" class="btn btn-green">
+              <i class="fa-solid fa-download"></i> Tải Trực Tiếp
+            </a>
+            <a href="LINK4M_CUA_BAN_1" target="_blank" rel="noopener" class="btn btn-orange">
+              <i class="fa-solid fa-key"></i> Lấy Khóa
+            </a>
+          </div>
+        </div>
 
-          <!-- Tệp 2 -->
-          <div class="file-card">
-            <div class="file-head">
-              <div class="file-icon-wrap"><i class="fa-solid fa-gamepad"></i></div>
-              <div>
-                <h3 class="file-name">FF BAT BUOC</h3>
-                <div class="file-meta-row">
-                  <span class="tag tag-ver">v7.0</span>
-                  <span class="tag tag-size">38 MB</span>
-                  <span class="tag tag-free">MIỄN PHÍ</span>
-                </div>
+        <!-- File 2 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="color: var(--accent-blue); background: rgba(59,130,246,0.1);">
+              <i class="fa-solid fa-gamepad"></i>
+            </div>
+            <div class="card-title">
+              <h3>TỐI ƯU HÓA GAME</h3>
+              <div class="card-meta">
+                <span class="tag tag-ver">v7.0</span>
+                <span class="tag tag-size">38 MB</span>
+                <span class="tag tag-free">MIỄN PHÍ</span>
               </div>
             </div>
-            <p class="file-desc">FF V7A DANH RIENG CHO BRMOD</p>
-            <div class="file-foot">
-              <!-- === THAY LINK MEDIAFIRE 2 Ở ĐÂY === -->
-              <a href="https://www.mediafire.com/file/THAY_LINK_CUA_BAN/file2" class="btn btn-direct" target="_blank" rel="noopener">
-                <i class="fa-solid fa-download"></i> Tải Trực Tiếp
-              </a>
-              <!-- === THAY LINK4M 2 Ở ĐÂY === -->
-              <a href="LINK4M_CUA_BAN_2" class="btn btn-link4m" target="_blank" rel="noopener">
-                <i class="fa-solid fa-link"></i> Lấy Khóa
-              </a>
-            </div>
+          </div>
+          <p class="card-desc">Tăng FPS, tối ưu hệ thống, loại bỏ lag giật trong game.</p>
+          <div class="card-buttons">
+            <a href="https://www.mediafire.com/file/THAY_LINK_CUA_BAN/file2" target="_blank" rel="noopener" class="btn btn-green">
+              <i class="fa-solid fa-download"></i> Tải Trực Tiếp
+            </a>
+            <a href="LINK4M_CUA_BAN_2" target="_blank" rel="noopener" class="btn btn-orange">
+              <i class="fa-solid fa-key"></i> Lấy Khóa
+            </a>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- TAB LẤY KHÓA -->
-      <section class="tab-pane" id="tab-getkey">
-        <div class="hero-block">
-          <h2 class="hero-title"><span class="hero-gradient-text">Lấy Mã Khóa</span> Truy Cập</h2>
-          <p class="hero-desc">Hoàn thành bước xác minh Link4M để nhận khóa sử dụng</p>
+    <!-- TAB 2: LẤY KHÓA -->
+    <section class="tab-content" id="tab-getkey">
+      <div class="getkey-card">
+        <div class="key-icon"><i class="fa-solid fa-key"></i></div>
+        <div class="stock-info">
+          <div class="stock-badge"><span></span> Còn <strong id="stock-count">1000</strong> khóa trong kho</div>
         </div>
-        <div class="getkey-container">
-          <div class="key-icon-circle"><i class="fa-solid fa-key"></i></div>
-          <h3 class="getkey-title">Sẵn Sàng — Nhấn để nhận khóa</h3>
-          <p class="getkey-desc">Hệ thống bảo vệ chống bỏ qua đảm bảo chia sẻ bền vững</p>
-          <!-- === THAY LINK4M CHÍNH Ở ĐÂY === -->
-          <a href="LINK4M_CUA_BAN_CHINH" class="key-btn-main" target="_blank" rel="noopener">
-            <i class="fa-solid fa-unlock"></i> Bắt Đầu Lấy Khóa
-          </a>
-          <div class="note-box">
-            <i class="fa-solid fa-info-circle"></i> Lưu ý: Mỗi IP giới hạn nhận 1 khóa/ngày. Vui lòng không dùng công cụ tự động.
-          </div>
-        </div>
-      </section>
+        <h2 class="getkey-title">Nhận Mã Khóa Kích Hoạt</h2>
+        <p class="getkey-desc">Hoàn thành bước xác minh Link4M → nhận key tự động ngay!</p>
 
-      <!-- TAB KIỂM TRA KHÓA -->
-      <section class="tab-pane" id="tab-check">
-        <div class="hero-block">
-          <h2 class="hero-title"><span class="hero-gradient-text">Kiểm Tra Trạng Thái</span> Khóa</h2>
-          <p class="hero-desc">Xem khóa còn hiệu lực hay đã hết hạn</p>
-        </div>
-        <div class="check-section">
-          <div class="form-field">
-            <label class="form-label">Nhập mã khóa</label>
-            <input type="text" class="form-input" id="keyInput" placeholder="VD: ABC123XYZ...">
+        <div class="steps">
+          <div class="step">
+            <span class="step-num">BƯỚC 1</span>
+            <span class="step-text">Bấm nút bên dưới → vượt Link4M → chờ hoàn thành</span>
           </div>
-          <button class="submit-btn" id="checkBtn">
-            <i class="fa-solid fa-search"></i> Kiểm Tra Ngay
+          <div class="step">
+            <span class="step-num">BƯỚC 2</span>
+            <span class="step-text">Quay lại trang này → hệ thống tự cấp key cho bạn</span>
+          </div>
+          <div class="step">
+            <span class="step-num">NHẬN KEY</span>
+            <span class="step-text">Sao chép key → dán vào game/panel để kích hoạt</span>
+          </div>
+        </div>
+
+        <a id="main-getkey-link" href="LINK4M_CUA_BAN_CHINH" target="_blank" rel="noopener" class="btn btn-orange btn-main" onclick="startKeyProcess()">
+          <i class="fa-solid fa-unlock"></i> BẮT ĐẦU LẤY KHÓA
+        </a>
+        <p class="notice">💡 Sau khi vượt link xong, <strong>quay lại trang này</strong> và bấm nút bên dưới để nhận key:</p>
+        <button id="receive-key-btn" class="btn btn-green btn-main" style="margin-top: 10px; display: none;" onclick="assignKey()">
+          <i class="fa-solid fa-gift"></i> NHẬN KEY NGAY
+        </button>
+
+        <!-- Kết quả hiển thị key -->
+        <div class="key-result" id="key-result-box">
+          <p class="key-label">✅ Khóa kích hoạt của bạn (sao chép dùng ngay):</p>
+          <div class="key-code" id="display-key">---</div>
+          <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 12px;">Hạn sử dụng: 24 giờ kể từ lúc nhận</p>
+          <div class="key-actions">
+            <button class="btn copy-btn" onclick="copyKey()">
+              <i class="fa-solid fa-copy"></i> Sao Chép Key
+            </button>
+            <button class="btn new-btn" onclick="resetKeyProcess()">
+              <i class="fa-solid fa-rotate-right"></i> Lấy Key Mới
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: KIỂM TRA KEY -->
+    <section class="tab-content" id="tab-check">
+      <div class="check-box">
+        <h3><i class="fa-solid fa-shield-check" style="color: var(--accent-green);"></i> Kiểm Tra Trạng Thái Khóa</h3>
+        <form onsubmit="checkKeyStatus(event); return false;">
+          <div class="form-group">
+            <label>NHẬP MÃ KHÓA CỦA BẠN:</label>
+            <input type="text" id="check-key-input" class="form-input" placeholder="VD: KEY-ABC123-XYZ789" required>
+          </div>
+          <button type="submit" class="btn btn-green" style="width: 100%;">
+            <i class="fa-solid fa-magnifying-glass"></i> Kiểm Tra Ngay
           </button>
-          <div id="checkResult" style="margin-top: 18px; display: none;"></div>
-        </div>
-      </section>
+        </form>
+        <div id="check-result-box" class="check-result"></div>
+      </div>
+    </section>
 
-      <!-- TAB KHO KHÓA -->
-      <section class="tab-pane" id="tab-vault">
-        <div class="hero-block">
-          <h2 class="hero-title"><span class="hero-gradient-text">Kho Khóa</span> Của Tôi</h2>
-          <p class="hero-desc">Lịch sử các khóa bạn đã nhận trên thiết bị này</p>
-        </div>
-        <div class="vault-section">
-          <div id="vaultList" class="vault-list">
-            <p style="color: var(--text-muted); text-align: center; padding: 20px;">Chưa có khóa nào được lưu</p>
-          </div>
-        </div>
-      </section>
-    </main>
+    <!-- Footer -->
+    <footer>
+      <p>© 2025 KEY HUB — Hệ thống chia sẻ & cấp key. Tất cả file tải trực tiếp từ Mediafire.</p>
+    </footer>
   </div>
 
   <script>
-    // Chuyển tab
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    const tabPanes = document.querySelectorAll('.tab-pane');
+    // ========== DANH SÁCH 1000 KEY TỰ ĐỘNG TẠO ==========
+    const keyList = [];
+    for (let i = 1; i <= 1000; i++) {
+      const num = String(i).padStart(4, '0');
+      const rand1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const rand2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+      keyList.push(`KEY-${num}-${rand1}-${rand2}`);
+    }
 
-    tabButtons.forEach(btn => {
+    // ========== QUẢN LÝ TRẠNG THÁI & PHÂN PHỐI KEY ==========
+    let usedKeys = JSON.parse(localStorage.getItem('usedKeys') || '[]');
+    let currentStock = keyList.length - usedKeys.length;
+    document.getElementById('stock-count').textContent = currentStock;
+
+    // Chuyển tab
+    document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const targetTab = btn.getAttribute('data-tab');
-        tabButtons.forEach(b => b.classList.remove('active'));
-        tabPanes.forEach(p => p.classList.remove('show'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
-        document.getElementById(`tab-${targetTab}`).classList.add('show');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
       });
+    });
+
+    // Bắt đầu quá trình lấy key
+    function startKeyProcess() {
+      localStorage.setItem('keyProcessStarted', 'true');
+      alert('✅ Đang chuyển hướng đến Link4M...\n\nSau khi hoàn thành, quay lại trang này → bấm nút "NHẬN KEY NGAY"');
+      setTimeout(() => {
+        document.getElementById('receive-key-btn').style.display = 'inline-flex';
+      }, 1500);
+    }
+
+    // Phân phối key chưa dùng
+    function assignKey() {
+      const availableKey = keyList.find(k => !usedKeys.includes(k));
+      if (!availableKey) {
+        alert('❌ Hết key trong kho! Vui lòng quay lại sau.');
+        return;
+      }
+      
+      // Đánh dấu đã dùng
+      usedKeys.push(availableKey);
+      localStorage.setItem('usedKeys', JSON.stringify(usedKeys));
+      localStorage.setItem('lastReceivedKey', availableKey);
+      localStorage.setItem('lastReceivedTime', new Date().toISOString());
+      
+      // Hiển thị
+      document.getElementById('display-key').textContent = availableKey;
+      document.getElementById('key-result-box').classList.add('show');
+      document.getElementById('stock-count').textContent = keyList.length - usedKeys.length;
+      document.getElementById('receive-key-btn').style.display = 'none';
+    }
+
+    // Sao chép key
+    function copyKey() {
+      const key = document.getElementById('display-key').textContent;
+      navigator.clipboard.writeText(key).then(() => {
+        alert('✅ Đã sao chép key vào bộ nhớ đệm!');
+      });
+    }
+
+    // Reset lấy key mới
+    function resetKeyProcess() {
+      document.getElementById('key-result-box').classList.remove('show');
+      localStorage.removeItem('keyProcessStarted');
+    }
+
+    // Kiểm tra key hợp lệ
+    function checkKeyStatus(e) {
+      e.preventDefault();
+      const input = document.getElementById('check-key-input').value.trim().toUpperCase();
+      const resultBox = document.getElementById('check-result-box');
+      
+      if (usedKeys.includes(input)) {
+        const index = usedKeys.indexOf(input);
+        resultBox.className = 'check-result valid';
+        resultBox.innerHTML = `
+          <p style="color: #86efac; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> Key Hợp Lệ ✅</p>
+          <p style="font-size: 13px; color: #94a3b8; margin-top: 6px;">Key này đã được cấp và còn hạn sử dụng.</p>
+        `;
+      } else {
+        resultBox.className = 'check-result invalid';
+        resultBox.innerHTML = `
+          <p style="color: #fca5a5; font-weight: 600;"><i class="fa-solid fa-circle-xmark"></i> Key Không Hợp Lệ ❌</p>
+          <p style="font-size: 13px; color: #94a3b8; margin-top: 6px;">Key không tồn tại hoặc đã hết hạn/hết lượt sử dụng.</p>
+        `;
+      }
+    }
+
+    // Kiểm tra nếu vừa quay lại thì hiện nút nhận key
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('keyProcessStarted') === 'true') {
+        document.getElementById('receive-key-btn').style.display = 'inline-flex';
+      }
     });
   </script>
 </body>
